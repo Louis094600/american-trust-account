@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>American Trust Account</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+button,input{font:inherit}button{cursor:pointer;border:0}
+.hidden{display:none!important}.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#062f58,#1769aa)}
+.login-card{width:100%;max-width:410px;background:#fff;border-radius:22px;padding:30px;box-shadow:0 20px 50px #0004}
+.logo{width:58px;height:58px;border-radius:17px;background:linear-gradient(135deg,#0b4f8a,#16a6d9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:bold}
+.login h1{margin:18px 0 8px}.muted{color:#667085}.field{margin:16px 0}.field label{display:block;font-size:14px;font-weight:bold;margin-bottom:7px}.field input{width:100%;padding:14px;border:1px solid #d0d5dd;border-radius:12px;outline:0}
+.primary{width:100%;padding:14px;border-radius:12px;background:#0b5b94;color:#fff;font-weight:bold}
+.top{background:linear-gradient(135deg,#062f58,#0d568c,#12a0d4);color:#fff;padding:20px 18px 30px}.top-inner,.container{max-width:1050px;margin:auto}.container{margin:-18px auto 80px;padding:0 15px}
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 25px #17203312;margin-bottom:16px}.balance{background:linear-gradient(135deg,#fff,#e9f7ff)}.balance .amount{font-size:35px;font-weight:bold;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.action{padding:18px 10px;border-radius:16px;color:#fff;font-weight:bold;min-height:90px}.deposit{background:linear-gradient(135deg,#149447,#43c978)}.withdraw{background:linear-gradient(135deg,#c92d43,#f05b6e)}.transfer{background:linear-gradient(135deg,#7045bd,#9b68e8)}.transactions{background:linear-gradient(135deg,#1769aa,#28a9dc)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #eef0f3}.row:last-child{border-bottom:0}.title{font-weight:bold}.amount-pos{color:#16864b;font-weight:bold}.amount-neg{color:#c62e43;font-weight:bold}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;z-index:10}.bottom button{background:#fff;padding:12px 15px;color:#667085;min-width:90px}.bottom button.active{color:#0b5b94;font-weight:bold}
+.page{display:none}.page.active{display:block}.back{background:none;color:#0b5b94;font-weight:bold;padding:0 0 15px}.receipt{text-align:center}.check{width:65px;height:65px;border-radius:50%;background:#e6f7ed;color:#15944c;font-size:35px;display:flex;align-items:center;justify-content:center;margin:5px auto 15px}.big{font-size:30px;font-weight:bold;margin:8px}.status{display:inline-block;padding:7px 12px;border-radius:20px;background:#e6f7ed;color:#16864b;font-weight:bold;font-size:13px}.detail{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.notice{font-size:12px;color:#667085;line-height:1.5}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.bottom button{min-width:65px;padding:11px 5px;font-size:12px}}
+</style>
+</head>
+<body>
+<div id="login" class="login"><div class="login-card">
+<div class="logo">AT</div><h1>American Trust Account</h1><p class="muted">Secure Account Access</p>
+<div class="field"><label>Username or Email</label><input id="username"></div>
+<div class="field"><label>Password</label><input id="password" type="password"></div>
+<button class="primary" onclick="login()">Login</button>
+</div></div>
+
+<div id="app" class="hidden">
+<header class="top"><div class="top-inner"><h2 id="welcome">Welcome</h2><div>Checking •••• 4821</div></div></header>
+<main class="container">
+<section id="home" class="page active">
+<div class="card balance"><div class="muted">Available Balance</div><div class="amount" id="balance">$0.00</div></div>
+<div class="grid">
+<button class="action deposit" onclick="showPage('deposit')">Deposit</button>
+<button class="action withdraw" onclick="showPage('withdraw')">Withdraw</button>
+<button class="action transfer" onclick="showPage('transfer')">Transfer</button>
+<button class="action transactions" onclick="showPage('transactions')">Transactions</button>
+</div>
+<div class="card"><h3>Account Details</h3><div class="detail"><span>Account</span><b>Checking •••• 4821</b></div><div class="detail"><span>Currency</span><b>USD</b></div></div>
+<div class="card"><h3>Recent Transactions</h3><div id="homeTransactions"></div></div>
+</section>
+
+<section id="transactions" class="page"><div class="card"><h2>Transactions</h2><input id="search" placeholder="Search transactions..." oninput="renderTransactions()" style="width:100%;padding:13px;border:1px solid #ddd;border-radius:11px"></div><div class="card" id="transactionList"></div></section>
+
+<section id="details" class="page"><div class="card receipt"><button class="back" onclick="showPage('transactions')">← Back to Transactions</button><div class="check">✓</div><h2 id="detailTitle">Transaction</h2><div class="big" id="detailAmount"></div><span class="status">COMPLETED</span><div style="text-align:left;margin-top:20px" id="detailInfo"></div></div></section>
+
+<section id="deposit" class="page"><div class="card"><button class="back" onclick="showPage('home')">← Back</button><h2>Deposit</h2><div class="field"><label>Amount</label><input id="depositAmount" type="number" min="0" step=".01"></div><button class="primary" onclick="deposit()">Deposit Funds</button></div></section>
+
+<section id="withdraw" class="page"><div class="card"><button class="back" onclick="showPage('home')">← Back</button><h2>Withdraw</h2><div class="field"><label>Amount</label><input id="withdrawAmount" type="number" min="0" step=".01"></div><button class="primary" onclick="withdraw()">Withdraw Funds</button></div></section>
+
+<section id="transfer" class="page"><div class="card"><button class="back" onclick="showPage('home')">← Back</button><h2>Transfer</h2><div class="field"><label>Recipient</label><input id="recipient"></div><div class="field"><label>Amount</label><input id="transferAmount" type="number" min="0" step=".01"></div><div class="field"><label>Reference</label><input id="reference"></div><button class="primary" onclick="transfer()">Transfer Funds</button></div></section>
+
+<section id="profile" class="page"><div class="card"><h2>Profile</h2><div class="field"><label>Account Name</label><input id="profileName"></div><div class="field"><label>Email</label><input id="profileEmail"></div><div class="field"><label>Phone</label><input id="profilePhone"></div><div class="field"><label>Address</label><input id="profileAddress"></div><button class="primary" onclick="saveProfile()">Save Profile</button></div></section>
+
+<section id="settings" class="page"><div class="card"><h2>Settings</h2><div class="detail"><span>Account Type</span><b>Checking</b></div><div class="detail"><span>Currency</span><b>USD</b></div><div class="detail"><span>Account Data</span><b>Saved on this device</b></div><div class="detail"><span>About</span><button onclick="showPage('about')" style="background:none;color:#0b5b94;font-weight:bold">Open</button></div><button onclick="resetAccount()" style="margin-top:20px;width:100%;padding:13px;border-radius:11px;background:#fce8eb;color:#c62e43;font-weight:bold">Reset Account</button><button onclick="logout()" style="margin-top:10px;width:100%;padding:13px;border-radius:11px;background:#eee;color:#333;font-weight:bold">Log Out</button></div></section>
+
+<section id="about" class="page"><div class="card"><button class="back" onclick="showPage('settings')">← Back to Settings</button><h2>About</h2><p>American Trust Account interface.</p><p class="notice">This interface is a fictional account simulator and does not connect to a real bank, payment network, deposit system, withdrawal service, or money-transfer network.</p></div></section>
+</main>
+<nav class="bottom"><button onclick="showPage('home')">Home</button><button onclick="showPage('transactions')">Transactions</button><button onclick="showPage('transfer')">Transfer</button><button onclick="showPage('profile')">Profile</button><button onclick="showPage('settings')">Settings</button></nav>
+</div>
+
+<script>
+const STARTING_BALANCE=60800;
+const DEFAULT_TX=[
+{title:"Salary",amount:3000,date:"September 30, 2026",time:"09:30 AM",type:"Deposit",recipient:"Sample Account",reference:"Salary",id:"ATX-20260930-0930-A1B2"},
+{title:"Groceries",amount:-125,date:"September 29, 2026",time:"02:15 PM",type:"Purchase",recipient:"Sample Store",reference:"Groceries",id:"ATX-20260929-1415-C3D4"},
+{title:"Transfer",amount:-500,date:"September 28, 2026",time:"11:45 AM",type:"Transfer",recipient:"Sample Account",reference:"Transfer",id:"ATX-20260928-1145-E5F6"}];
+const DEFAULT_PROFILE={name:"Louis Jackie Allanly",email:"",phone:"",address:""};
+
+function initializeStorage(){
+if(localStorage.getItem("sampleBalance")===null)localStorage.setItem("sampleBalance",STARTING_BALANCE);
+if(localStorage.getItem("sampleTransactions")===null)localStorage.setItem("sampleTransactions",JSON.stringify(DEFAULT_TX));
+if(localStorage.getItem("sampleProfile")===null)localStorage.setItem("sampleProfile",JSON.stringify(DEFAULT_PROFILE));
+}
+function money(n){return "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function getBalance(){return Number(localStorage.getItem("sampleBalance")||0)}
+function setBalance(n){localStorage.setItem("sampleBalance",String(n))}
+function getTransactions(){try{return JSON.parse(localStorage.getItem("sampleTransactions"))||[]}catch(e){return[]}}
+function setTransactions(a){localStorage.setItem("sampleTransactions",JSON.stringify(a))}
+function getProfile(){try{return JSON.parse(localStorage.getItem("sampleProfile"))||DEFAULT_PROFILE}catch(e){return DEFAULT_PROFILE}}
+function transactionTitle(t){let n=String(t.title||t.reference||t.type||"Transaction").trim().toLowerCase();if(n==="account deposit"||n==="deposit")return"Deposit";if(n==="account withdrawal"||n==="withdrawal"||n==="withdraw")return"Withdrawal";if(n==="transfer")return"Transfer";return n.charAt(0).toUpperCase()+n.slice(1)}
+function login(){if(username.value.trim()==="Louis Jackie"&&password.value==="Louis600"){localStorage.setItem("sampleLoggedIn","true");document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden");updateUI();showPage("home")}else alert("Incorrect username or password.")}
+function logout(){localStorage.removeItem("sampleLoggedIn");location.reload()}
+function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));let p=document.getElementById(id);if(p)p.classList.add("active");if(id==="transactions")renderTransactions();if(id==="home")renderHomeTransactions();if(id==="profile"){let x=getProfile();profileName.value=x.name||"";profileEmail.value=x.email||"";profilePhone.value=x.phone||"";profileAddress.value=x.address||""}}
+function updateUI(){balance.textContent=money(getBalance());let p=getProfile();welcome.textContent="Welcome, "+(p.name||"Louis Jackie");renderHomeTransactions()}
+function transactionHTML(t){return `<div class="row" onclick="openDetails('${escapeHTML(t.id)}')"><div><div class="title">${escapeHTML(transactionTitle(t))}</div><div class="muted" style="font-size:12px">${escapeHTML(t.date)} • ${escapeHTML(t.time||"")}</div></div><div class="${Number(t.amount)>=0?"amount-pos":"amount-neg"}">${Number(t.amount)>=0?"+":"-"}${money(Math.abs(t.amount))}</div></div>`}
+function renderHomeTransactions(){let a=getTransactions();homeTransactions.innerHTML=a.slice(0,5).map(transactionHTML).join("")||"<p class='muted'>No transactions</p>"}
+function renderTransactions(){let q=(search.value||"").toLowerCase();let a=getTransactions().filter(t=>JSON.stringify(t).toLowerCase().includes(q));transactionList.innerHTML=a.map(transactionHTML).join("")||"<p class='muted'>No transactions found.</p>"}
+function openDetails(id){let t=getTransactions().find(x=>x.id===id);if(!t)return;detailTitle.textContent=transactionTitle(t);detailAmount.textContent=(Number(t.amount)>=0?"+":"-")+money(Math.abs(t.amount));detailInfo.innerHTML=`<div class="detail"><span>Date</span><b>${escapeHTML(t.date)}</b></div><div class="detail"><span>Time</span><b>${escapeHTML(t.time||"")}</b></div><div class="detail"><span>Transaction Type</span><b>${escapeHTML(t.type||"")}</b></div><div class="detail"><span>Recipient</span><b>${escapeHTML(t.recipient||"")}</b></div><div class="detail"><span>Reference</span><b>${escapeHTML(t.reference||"")}</b></div><div class="detail"><span>Transaction ID</span><b>${escapeHTML(t.id)}</b></div>`;showPage("details")}
+function newId(){return"ATX-"+Date.now()}
+function todayDate(){return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
+function currentTime(){return new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}
+function deposit(){let n=Number(depositAmount.value);if(!(n>0))return alert("Enter a valid amount.");setBalance(getBalance()+n);let a=getTransactions();a.unshift({title:"Deposit",amount:n,date:todayDate(),time:currentTime(),type:"Deposit",recipient:"Sample Account",reference:"Deposit",id:newId()});setTransactions(a);depositAmount.value="";updateUI();alert("Deposit completed.");showPage("home")}
+function withdraw(){let n=Number(withdrawAmount.value);if(!(n>0))return alert("Enter a valid amount.");if(n>getBalance())return alert("Insufficient balance.");setBalance(getBalance()-n);let a=getTransactions();a.unshift({title:"Withdrawal",amount:-n,date:todayDate(),time:currentTime(),type:"Withdrawal",recipient:"Sample Account",reference:"Withdrawal",id:newId()});setTransactions(a);withdrawAmount.value="";updateUI();alert("Withdrawal completed.");showPage("home")}
+function transfer(){let r=recipient.value.trim(),n=Number(transferAmount.value),ref=reference.value.trim()||"Transfer";if(!r)return alert("Enter a recipient.");if(!(n>0))return alert("Enter a valid amount.");if(n>getBalance())return alert("Insufficient balance.");setBalance(getBalance()-n);let a=getTransactions();a.unshift({title:"Transfer",amount:-n,date:todayDate(),time:currentTime(),type:"Transfer",recipient:r,reference:ref,id:newId()});setTransactions(a);recipient.value="";transferAmount.value="";reference.value="";updateUI();alert("Transfer completed.");showPage("home")}
+function saveProfile(){let p={name:profileName.value.trim()||"Louis Jackie Allanly",email:profileEmail.value.trim(),phone:profilePhone.value.trim(),address:profileAddress.value.trim()};localStorage.setItem("sampleProfile",JSON.stringify(p));updateUI();alert("Profile saved.")}
+function resetAccount(){if(confirm("Reset the sample account? This removes saved transactions and restores the starting balance.")){setBalance(STARTING_BALANCE);setTransactions(DEFAULT_TX);localStorage.setItem("sampleProfile",JSON.stringify(DEFAULT_PROFILE));updateUI();showPage("home")}}
+function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+initializeStorage();
+if(localStorage.getItem("sampleLoggedIn")==="true")login();
+</script>
+</body>
+</html>
